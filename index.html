@@ -29,7 +29,6 @@
       overflow-x: hidden;
     }
 
-    /* ── BACKGROUND GRID + GLOW ── */
     body::before {
       content: '';
       position: fixed; inset: 0;
@@ -50,14 +49,12 @@
       pointer-events: none; z-index: 0;
     }
 
-    /* ── PARTICLES CANVAS ── */
     #particles {
       position: fixed; inset: 0;
       pointer-events: none; z-index: 0;
       opacity: 0.5;
     }
 
-    /* ── HEADER ── */
     header {
       position: sticky; top: 0; z-index: 100;
       background: rgba(10,12,18,0.8);
@@ -77,7 +74,8 @@
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
+      font-size: 0.6rem; font-weight: 800; letter-spacing: -0.5px;
+      color: #fff;
       box-shadow: 0 0 20px rgba(79,142,247,0.4);
       animation: logoGlow 3s ease-in-out infinite;
     }
@@ -120,7 +118,6 @@
     }
     .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* ── HERO ── */
     .hero {
       position: relative; z-index: 1;
       padding: 100px 36px 48px;
@@ -164,7 +161,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── STATS BAR ── */
     .stats-bar {
       position: relative; z-index: 1;
       max-width: 1400px; margin: 0 auto;
@@ -184,7 +180,6 @@
     .stat-pill-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
     .stat-pill-val   { font-size: 0.95rem; font-weight: 700; color: var(--text); }
 
-    /* ── CONTROLS ── */
     .controls {
       position: relative; z-index: 1;
       max-width: 1400px; margin: 0 auto;
@@ -223,7 +218,6 @@
     }
     .sort-btn.active::after { opacity: 1; }
 
-    /* ── GRID ── */
     .grid-wrap {
       position: relative; z-index: 1;
       max-width: 1400px; margin: 0 auto;
@@ -236,7 +230,6 @@
       gap: 20px;
     }
 
-    /* ── CARD ── */
     .card {
       background: linear-gradient(145deg, #14182a, #0f1220);
       border: 1px solid var(--border);
@@ -248,7 +241,6 @@
       animation: cardIn 0.5s cubic-bezier(0.34,1.2,0.64,1) both;
     }
 
-    /* shimmer scan line on hover */
     .card::before {
       content: '';
       position: absolute; inset: 0;
@@ -274,7 +266,6 @@
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* rank badge */
     .card-rank-badge {
       position: absolute; top: 10px; left: 10px; z-index: 3;
       background: rgba(10,12,18,0.75);
@@ -307,10 +298,10 @@
       width: 100%; aspect-ratio: 16/9;
       background: linear-gradient(135deg, #141828, #1a2040);
       display: flex; align-items: center; justify-content: center;
-      font-size: 2.5rem;
+      font-size: 1rem; color: var(--muted); letter-spacing: 2px;
+      font-family: 'DM Mono', monospace;
     }
 
-    /* gradient overlay on thumb */
     .card-thumb-wrap::after {
       content: '';
       position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
@@ -354,7 +345,6 @@
     .stat-value.teal  { color: var(--accent2); }
     .stat-value.white { color: var(--text); }
 
-    /* ── SKELETON ── */
     .skeleton {
       background: linear-gradient(145deg, #14182a, #0f1220);
       border: 1px solid var(--border);
@@ -377,14 +367,19 @@
       100% { background-position: -200% 0; }
     }
 
-    /* ── ERROR ── */
     .error-box {
       grid-column: 1/-1; text-align: center; padding: 80px 32px; color: var(--muted);
     }
     .error-box h2 { font-size: 1.3rem; margin-bottom: 10px; color: var(--text); }
     .error-box p  { font-size: 0.9rem; line-height: 1.7; }
+    .error-box pre {
+      margin-top: 12px; font-family: 'DM Mono', monospace; font-size: 0.75rem;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 12px; border-radius: 8px; text-align: left;
+      max-width: 600px; margin: 12px auto 0; overflow-x: auto;
+      white-space: pre-wrap; word-break: break-all;
+    }
 
-    /* ── FOOTER ── */
     footer {
       position: relative; z-index: 1;
       border-top: 1px solid var(--border);
@@ -404,7 +399,7 @@
 
 <header>
   <div class="logo">
-    <div class="logo-icon">🎮</div>
+    <div class="logo-icon">RC</div>
     RobloxCharts
   </div>
   <div class="header-right">
@@ -414,28 +409,28 @@
 </header>
 
 <section class="hero">
-  <div class="hero-eyebrow">📊 Real-time leaderboard</div>
+  <div class="hero-eyebrow">Real-time leaderboard</div>
   <h1>Top Roblox<br><span class="grad">Games Right Now</span></h1>
   <p>Live player counts, total visits, and favorites — pulled straight from the Roblox API and updated every minute.</p>
 </section>
 
 <div class="stats-bar" id="statsBar">
   <div class="stat-pill">
-    <span class="stat-pill-icon">🟢</span>
+    <span class="stat-pill-icon">●</span>
     <div>
       <div class="stat-pill-label">Total Playing</div>
       <div class="stat-pill-val" id="totalPlaying">—</div>
     </div>
   </div>
   <div class="stat-pill">
-    <span class="stat-pill-icon">🎮</span>
+    <span class="stat-pill-icon">◈</span>
     <div>
       <div class="stat-pill-label">Games Tracked</div>
       <div class="stat-pill-val" id="gamesTracked">—</div>
     </div>
   </div>
   <div class="stat-pill">
-    <span class="stat-pill-icon">⏱</span>
+    <span class="stat-pill-icon">◷</span>
     <div>
       <div class="stat-pill-label">Last Updated</div>
       <div class="stat-pill-val" id="lastUpdated">—</div>
@@ -445,9 +440,9 @@
 
 <div class="controls">
   <span class="controls-label">Sort by</span>
-  <button class="sort-btn active" data-sort="playing">🟢 Active Players</button>
-  <button class="sort-btn" data-sort="visits">👁 Total Visits</button>
-  <button class="sort-btn" data-sort="favoritedCount">⭐ Favorites</button>
+  <button class="sort-btn active" data-sort="TopCharts">Top Charts</button>
+  <button class="sort-btn" data-sort="MostEngaging">Most Engaging</button>
+  <button class="sort-btn" data-sort="UpAndComing">Up &amp; Coming</button>
 </div>
 
 <div class="grid-wrap">
@@ -457,64 +452,45 @@
 <footer>RobloxCharts — not affiliated with Roblox Corporation · Data from the Roblox public API</footer>
 
 <script>
-  // ── PARTICLES ────────────────────────────────────────────
+  // ── PARTICLES ──────────────────────────────────────────
   (function() {
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
     let W, H, dots = [];
-
-    function resize() {
-      W = canvas.width  = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    }
-
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
     function init() {
       dots = Array.from({length: 60}, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
+        x: Math.random() * W, y: Math.random() * H,
         r: Math.random() * 1.5 + 0.3,
-        vx: (Math.random() - 0.5) * 0.25,
-        vy: (Math.random() - 0.5) * 0.25,
+        vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
         alpha: Math.random() * 0.4 + 0.1,
       }));
     }
-
     function draw() {
       ctx.clearRect(0, 0, W, H);
       dots.forEach(d => {
         d.x += d.vx; d.y += d.vy;
         if (d.x < 0) d.x = W; if (d.x > W) d.x = 0;
         if (d.y < 0) d.y = H; if (d.y > H) d.y = 0;
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(79,142,247,${d.alpha})`;
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(79,142,247,${d.alpha})`; ctx.fill();
       });
       requestAnimationFrame(draw);
     }
-
     window.addEventListener('resize', () => { resize(); init(); });
     resize(); init(); draw();
   })();
 
-  // ── PROXY ───────────────────────────────────────────────
+  // ── CONFIG ─────────────────────────────────────────────
+  // ⚠️  REPLACE THIS with your actual Cloudflare Worker URL
   const WORKER_URL = 'https://young-resonance-128e.frostyknight2354.workers.dev';
 
-  async function proxyFetch(url) {
-    const workerUrl = WORKER_URL + '?url=' + encodeURIComponent(url);
-    const res = await fetch(workerUrl);
-    if (res.ok) return res;
-    throw new Error('Worker fetch failed: ' + res.status);
-  }
+  let currentSort = 'TopCharts';
+  // Session ID is generated once per page load and reused
+  const SESSION_ID = crypto.randomUUID();
 
-  // ── CONFIG ───────────────────────────────────────────────
-  const SORT_MAP = {
-    playing:        'MostEngaging',
-    visits:         'MostVisited',
-    favoritedCount: 'TopFavorited',
-  };
-
-  let currentSort = 'playing';
+  // Cache sortId lookups so we don't re-fetch sorts every time
+  let sortIdCache = null;
 
   function fmt(n) {
     if (n == null) return '—';
@@ -524,9 +500,8 @@
     return n.toLocaleString();
   }
 
-  // ── ANIMATED COUNTER ─────────────────────────────────────
   function animateCount(el, target) {
-    const start = 0, duration = 800;
+    const duration = 800;
     const startTime = performance.now();
     function step(now) {
       const p = Math.min((now - startTime) / duration, 1);
@@ -538,31 +513,69 @@
     requestAnimationFrame(step);
   }
 
-  // ── FETCH ────────────────────────────────────────────────
-  async function fetchGames(sortKey) {
-    // Use the sort token endpoint which is less restricted
-    const sortMap2 = {
-      playing: '0',
-      visits: '2',
-      favoritedCount: '5',
-    };
-    const sortId = sortMap2[sortKey] || '0';
-    const url = `https://games.roblox.com/v1/games/list?SortFilter=${sortId}&GameFilter=0&StartRows=0&MaxRows=48`;
-    const res = await proxyFetch(url);
-    const text = await res.text();
-    let data;
-    try { data = JSON.parse(text); } catch(e) { throw new Error('Bad JSON: ' + text.slice(0,100)); }
-    if (data.games && data.games.length) return data.games;
-    if (data.errors) throw new Error('Roblox error: ' + JSON.stringify(data.errors));
-    return [];
+  // ── API HELPERS ────────────────────────────────────────
+  async function workerFetch(params) {
+    const url = WORKER_URL + '?' + new URLSearchParams(params).toString();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+    return res.json();
   }
 
-  async function fetchThumbs(universeIds) {
-    const ids = universeIds.join(',');
-    const url = `https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${ids}&size=768x432&format=Png&isCircular=false`;
+  // Step 1: Get available sorts and find the sortId for our desired sort name
+  async function getSortId(sortName) {
+    if (sortIdCache && sortIdCache[sortName]) return sortIdCache[sortName];
+
+    const data = await workerFetch({ action: 'get-sorts', sessionId: SESSION_ID });
+
+    // The response has a "sorts" array; each sort has a "name" and "topic" or "contentType"
+    // We need to find the matching sort and grab its sortId / topic
+    const sorts = data.sorts || data.Sorts || [];
+    if (!sorts.length) throw new Error('No sorts returned: ' + JSON.stringify(data).slice(0, 200));
+
+    // Build a cache of all sort names → sortId
+    sortIdCache = {};
+    sorts.forEach(s => {
+      // sortId might be in different fields depending on the response shape
+      const id = s.sortId || s.SortId || s.topic || s.Topic || s.name || s.Name;
+      const name = s.name || s.Name || s.topic || s.Topic || '';
+      if (id) sortIdCache[name] = id;
+    });
+
+    // Fuzzy match: find the sort that includes sortName (case-insensitive)
+    const key = Object.keys(sortIdCache).find(k =>
+      k.toLowerCase().includes(sortName.toLowerCase()) ||
+      sortName.toLowerCase().includes(k.toLowerCase())
+    );
+
+    if (key) return sortIdCache[key];
+
+    // Fallback: return the first sortId available
+    const firstKey = Object.keys(sortIdCache)[0];
+    console.warn(`Sort "${sortName}" not found, using fallback: ${firstKey}`);
+    return sortIdCache[firstKey];
+  }
+
+  // Step 2: Get games for a sortId
+  async function getSortContent(sortId) {
+    const data = await workerFetch({ action: 'get-sort-content', sessionId: SESSION_ID, sortId });
+    // Response shape: { games: [...] } or { Games: [...] }
+    return data.games || data.Games || data.content || data.Content || data.items || data.Items || [];
+  }
+
+  // Step 3: Enrich with detailed stats from games v2 API
+  async function getGameDetails(universeIds) {
+    if (!universeIds.length) return {};
+    const data = await workerFetch({ action: 'game-details', ids: universeIds.join(',') });
+    const map = {};
+    (data.data || data.Data || []).forEach(g => { map[g.id || g.universeId] = g; });
+    return map;
+  }
+
+  // Step 4: Get thumbnails
+  async function getThumbnails(universeIds) {
+    if (!universeIds.length) return {};
     try {
-      const res = await proxyFetch(url);
-      const data = await res.json();
+      const data = await workerFetch({ action: 'thumbnails', ids: universeIds.join(',') });
       const map = {};
       (data.data || []).forEach(item => {
         const t = item.thumbnails?.[0];
@@ -572,7 +585,7 @@
     } catch { return {}; }
   }
 
-  // ── SKELETONS ────────────────────────────────────────────
+  // ── SKELETONS ──────────────────────────────────────────
   function showSkeletons() {
     document.getElementById('gameGrid').innerHTML = Array(12).fill(`
       <div class="skeleton">
@@ -585,99 +598,130 @@
       </div>`).join('');
   }
 
-  // ── RENDER ───────────────────────────────────────────────
-  function renderCards(games, thumbs) {
+  // ── RENDER ─────────────────────────────────────────────
+  function renderCards(games, details, thumbs) {
     const grid = document.getElementById('gameGrid');
     grid.innerHTML = '';
 
     if (!games.length) {
-      grid.innerHTML = `<div class="error-box"><h2>No games found</h2><p>Could not load data. Try refreshing.</p></div>`;
+      grid.innerHTML = `<div class="error-box"><h2>No games found</h2><p>Could not load games from this sort. Try a different category or refresh.</p></div>`;
       return;
     }
 
-    // Update stats bar
-    const total = games.reduce((s, g) => s + (g.playerCount || 0), 0);
-    const tp = document.getElementById('totalPlaying');
-    animateCount(tp, total);
+    const total = games.reduce((s, g) => {
+      const d = details[g.universeId || g.UniverseId];
+      return s + (d?.playing || d?.playerCount || g.playerCount || g.PlayerCount || 0);
+    }, 0);
+
+    animateCount(document.getElementById('totalPlaying'), total);
     document.getElementById('gamesTracked').textContent = games.length;
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
 
     games.forEach((g, i) => {
-      const thumb = thumbs[g.universeId];
+      const uid = g.universeId || g.UniverseId;
+      const pid = g.rootPlaceId || g.RootPlaceId || g.placeId || g.PlaceId;
+      const d = details[uid] || {};
+
+      const name        = g.name || g.Name || d.name || '—';
+      const playerCount = d.playing ?? d.playerCount ?? g.playerCount ?? g.PlayerCount ?? null;
+      const visits      = d.visits ?? g.totalVisits ?? g.TotalVisits ?? null;
+      const upVotes     = d.upVotes ?? g.totalUpVotes ?? g.TotalUpVotes ?? null;
+      const favCount    = d.favoritedCount ?? g.favoritedCount ?? g.FavoritedCount ?? null;
+      const thumb       = thumbs[uid];
+
       const card = document.createElement('div');
       card.className = 'card';
       card.style.animationDelay = (i % 12) * 45 + 'ms';
 
       const isTop3 = i < 3;
-      const rankLabels = ['🥇', '🥈', '🥉'];
+      const rankLabels = ['#1', '#2', '#3'];
 
       card.innerHTML = `
         <div class="card-thumb-wrap">
           ${thumb
-            ? `<img class="card-thumb" src="${thumb}" alt="${g.name}" loading="lazy"/>`
-            : `<div class="card-thumb-placeholder">🎮</div>`}
+            ? `<img class="card-thumb" src="${thumb}" alt="${name}" loading="lazy"/>`
+            : `<div class="card-thumb-placeholder">NO IMAGE</div>`}
           <div class="card-rank-badge ${isTop3 ? 'top3' : ''}">
-            ${isTop3 ? rankLabels[i] + ' #' + (i+1) : '# ' + (i+1)}
+            ${isTop3 ? rankLabels[i] : '# ' + (i+1)}
           </div>
         </div>
         <div class="card-body">
-          <div class="card-name">${g.name}</div>
+          <div class="card-name">${name}</div>
           <div class="card-stats">
             <div class="stat">
               <div class="stat-label">Playing</div>
-              <div class="stat-value green">${fmt(g.playerCount)}</div>
+              <div class="stat-value green">${fmt(playerCount)}</div>
             </div>
             <div class="stat">
               <div class="stat-label">Visits</div>
-              <div class="stat-value blue">${fmt(g.visits ?? g.visitCount)}</div>
+              <div class="stat-value blue">${fmt(visits)}</div>
             </div>
             <div class="stat">
               <div class="stat-label">Likes</div>
-              <div class="stat-value white">${fmt(g.totalUpVotes)}</div>
+              <div class="stat-value white">${fmt(upVotes)}</div>
             </div>
             <div class="stat">
               <div class="stat-label">Favorites</div>
-              <div class="stat-value teal">${fmt(g.favoritedCount)}</div>
+              <div class="stat-value teal">${fmt(favCount)}</div>
             </div>
           </div>
         </div>`;
 
-      card.addEventListener('click', () => window.open(`https://www.roblox.com/games/${g.placeId}`, '_blank'));
+      if (pid) {
+        card.addEventListener('click', () => window.open(`https://www.roblox.com/games/${pid}`, '_blank'));
+      }
       grid.appendChild(card);
     });
   }
 
-  // ── LOAD ─────────────────────────────────────────────────
-  async function load(sortKey) {
+  // ── LOAD ───────────────────────────────────────────────
+  async function load(sortName) {
     showSkeletons();
     try {
-      const games = await fetchGames(sortKey);
-      const ids = games.map(g => g.universeId).filter(Boolean);
-      const thumbs = ids.length ? await fetchThumbs(ids) : {};
-      renderCards(games, thumbs);
+      // 1. Get the correct sortId for this sort name
+      const sortId = await getSortId(sortName);
+      console.log(`Using sortId "${sortId}" for sort "${sortName}"`);
+
+      // 2. Get game list
+      const games = await getSortContent(sortId);
+      console.log('Games received:', games.length, games[0]);
+
+      if (!games.length) throw new Error('No games in sort content response');
+
+      // 3. Enrich with details + thumbnails in parallel
+      const universeIds = games.map(g => g.universeId || g.UniverseId).filter(Boolean);
+      const [details, thumbs] = await Promise.all([
+        getGameDetails(universeIds),
+        getThumbnails(universeIds),
+      ]);
+
+      renderCards(games, details, thumbs);
+
     } catch (err) {
-      console.error(err);
+      console.error('Load error:', err);
       document.getElementById('gameGrid').innerHTML = `
         <div class="error-box">
           <h2>Couldn't load games</h2>
-          <p>All proxies failed. The Roblox API may be temporarily unavailable.<br>Try refreshing in a moment.</p>
+          <p>Something went wrong fetching from the Roblox API.</p>
+          <pre>${err.message}</pre>
         </div>`;
     }
   }
 
-  // ── CONTROLS ─────────────────────────────────────────────
+  // ── CONTROLS ───────────────────────────────────────────
   document.querySelectorAll('.sort-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentSort = btn.dataset.sort;
+      sortIdCache = null; // reset cache on sort change so we re-discover
       load(currentSort);
     });
   });
 
   document.getElementById('refreshBtn').addEventListener('click', () => load(currentSort));
 
-  // ── INIT ─────────────────────────────────────────────────
+  // ── INIT ───────────────────────────────────────────────
   load(currentSort);
   setInterval(() => load(currentSort), 60_000);
 </script>
