@@ -343,7 +343,7 @@
     .chart-pts {
       font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--muted);
     }
-    .chart-canvas-wrap { position:relative; height:200px; }
+    .chart-canvas-wrap { position:relative; height:200px; width:100%; display:block; }
     .chart-empty {
       height:200px; display:flex; flex-direction:column;
       align-items:center; justify-content:center; gap:8px;
@@ -663,7 +663,7 @@
     const wrap = document.getElementById('detailChartWrap');
     if (!wrap) return;
 
-    if (!history || history.length < 2) {
+    if (!history || history.length < 1) {
       wrap.innerHTML = `
         <div class="chart-header">
           <span class="chart-title">Player Count History</span>
@@ -676,7 +676,8 @@
       return;
     }
 
-    const pts = history.slice(-168);
+    const rawPts = history.slice(-168);
+    const pts = rawPts.length === 1 ? [rawPts[0], rawPts[0]] : rawPts;
 
     const labels = pts.map(p => {
       const d   = new Date(p.t * 1000);
@@ -697,7 +698,10 @@
       </div>
       <div class="chart-canvas-wrap"><canvas id="playerChart"></canvas></div>`;
 
-    const ctx = document.getElementById('playerChart').getContext('2d');
+    const canvas = document.getElementById('playerChart');
+    canvas.style.width = '100%';
+    canvas.style.height = '200px';
+    const ctx = canvas.getContext('2d');
     if (activeChart) activeChart.destroy();
 
     activeChart = new Chart(ctx, {
@@ -871,7 +875,7 @@
       }
     }
 
-    renderChart(history);
+    requestAnimationFrame(() => renderChart(history));
   }
 
   async function openGameDetail(placeId) {
