@@ -358,8 +358,10 @@
           <div class="lookup-stats">
             <div class="lookup-stat">Playing<span id="lsPlaying">—</span></div>
             <div class="lookup-stat">Visits<span id="lsVisits">—</span></div>
-            <div class="lookup-stat">Likes<span id="lsLikes">—</span></div>
+            <div class="lookup-stat">Visits<span id="lsVisits">—</span></div>
             <div class="lookup-stat">Favorites<span id="lsFavs">—</span></div>
+            <div class="lookup-stat">Likes<span id="lsLikes">—</span></div>
+            <div class="lookup-stat">Dislikes<span id="lsDislikes">—</span></div>
             <div class="lookup-stat">Like Ratio<span id="lsRatio">—</span></div>
           </div>
         </div>
@@ -512,9 +514,11 @@
       document.getElementById('lookupName').textContent    = g.name;
       document.getElementById('lsPlaying').textContent     = fmtStat(g.playerCount);
       document.getElementById('lsVisits').textContent      = fmtStat(g.visits);
-      document.getElementById('lsLikes').textContent       = fmtStat(g.likes);
+      document.getElementById('lsVisits').textContent      = fmtStat(g.visits);
       document.getElementById('lsFavs').textContent        = fmtStat(g.favorites);
-      document.getElementById('lsRatio').textContent       = g.likeRatio != null ? g.likeRatio+'%' : '—';
+      document.getElementById('lsLikes').textContent       = fmtStat(g.likes);
+      document.getElementById('lsDislikes').textContent    = fmtStat(g.dislikes);
+      document.getElementById('lsRatio').textContent       = g.likeRatio != null ? g.likeRatio + '%' : '—';
 
       document.getElementById('lookupOpenBtn').onclick = () =>
         window.open(`https://www.roblox.com/games/${g.placeId}`, '_blank');
@@ -552,8 +556,13 @@
     const detail = detailCache[g.placeId];
     const loaded = !!detail;
 
+    // visits/favorites come from detail fetch; likes/ratio come from Rolimons directly
     const sv = (field, cls) =>
       `<div class="stat-val ${loaded ? cls : 'pending'}" data-field="${field}">${loaded ? fmtStat(detail[field]) : '…'}</div>`;
+
+    // Like ratio: prefer detail fetch result, fall back to Rolimons data
+    const likeRatio = loaded && detail.likeRatio != null ? detail.likeRatio : (g.likeRatio ?? null);
+    const likes     = loaded && detail.likes     != null ? detail.likes     : (g.likes     ?? null);
 
     card.innerHTML = `
       <div class="card-thumb-wrap">
@@ -567,8 +576,8 @@
         <div class="card-stats">
           <div class="stat"><div class="stat-label">Playing</div><div class="stat-val green">${fmtStat(g.playerCount)}</div></div>
           <div class="stat"><div class="stat-label">Visits</div>${sv('visits','blue')}</div>
-          <div class="stat"><div class="stat-label">Likes</div>${sv('likes','white')}</div>
           <div class="stat"><div class="stat-label">Favorites</div>${sv('favorites','teal')}</div>
+          <div class="stat"><div class="stat-label">Like Ratio</div><div class="stat-val white" data-field="likeRatio">${likeRatio != null ? likeRatio+'%' : '—'}</div></div>
         </div>
       </div>`;
 
@@ -585,10 +594,10 @@
       detailCache[placeId] = d;
       const card = document.querySelector(`.card[data-placeid="${placeId}"]`);
       if (!card) return;
-      [['visits','blue'],['likes','white'],['favorites','teal']].forEach(([field,cls]) => {
+      [['visits','blue'],['favorites','teal'],['likeRatio','white']].forEach(([field,cls]) => {
         const el = card.querySelector(`[data-field="${field}"]`);
         if (!el) return;
-        el.textContent = fmtStat(d[field]);
+        el.textContent = field === 'likeRatio' ? (d[field] != null ? d[field]+'%' : '—') : fmtStat(d[field]);
         el.className   = `stat-val ${cls}`;
       });
     });
