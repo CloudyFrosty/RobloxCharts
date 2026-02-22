@@ -109,7 +109,6 @@
     .refresh-btn:hover { border-color:var(--accent); color:var(--accent); }
     .refresh-btn:disabled { opacity:0.4; cursor:not-allowed; }
 
-    /* ── LOOKUP MODAL ── */
     .modal-overlay {
       position:fixed; inset:0; z-index:500;
       background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
@@ -170,7 +169,6 @@
     .modal-close { position:absolute; top:16px; right:16px; background:none; border:none; color:var(--muted); font-size:1.1rem; cursor:pointer; transition:color 0.15s; line-height:1; padding:4px; }
     .modal-close:hover { color:var(--text); }
 
-    /* ── DETAIL PANEL ── */
     .detail-backdrop {
       position:fixed; inset:0; z-index:300;
       background:rgba(0,0,0,0.55); backdrop-filter:blur(4px);
@@ -187,7 +185,7 @@
       display:flex; flex-direction:column;
       transform:translateX(100%);
       transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
-      overflow-y: auto;   /* ← change from overflow:hidden to this */
+      overflow-y: auto;
     }
     .detail-panel.open { transform:translateX(0); }
 
@@ -249,9 +247,7 @@
       font-family:'JetBrains Mono',monospace; font-size:0.75rem;
       color:var(--muted); letter-spacing:0.5px;
     }
-    .detail-creator a {
-      color:var(--accent); text-decoration:none;
-    }
+    .detail-creator a { color:var(--accent); text-decoration:none; }
     .detail-creator a:hover { text-decoration:underline; }
 
     .detail-body {
@@ -379,7 +375,6 @@
       color:#ff6b6b; text-align:center; line-height:1.6;
     }
 
-    /* ── HERO ── */
     .hero { position:relative; z-index:1; padding:72px 48px 36px; max-width:1500px; margin:0 auto; }
     .hero-eyebrow { font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--accent); letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; opacity:0; animation:up 0.5s ease 0.05s both; }
     .hero h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(3.8rem,8.5vw,7.5rem); line-height:0.9; letter-spacing:3px; margin-bottom:22px; opacity:0; animation:up 0.5s ease 0.1s both; }
@@ -487,7 +482,6 @@
   </div>
 </header>
 
-<!-- Lookup modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <button class="modal-close" id="modalClose">✕</button>
@@ -523,7 +517,6 @@
   </div>
 </div>
 
-<!-- Detail panel -->
 <div class="detail-backdrop" id="detailBackdrop"></div>
 <div class="detail-panel" id="detailPanel">
   <div id="detailContent"></div>
@@ -611,13 +604,12 @@
 
   function extractPlaceId(input) {
     input = input.trim();
-    if (/^\d+$/.test(input)) return Number(input);
+    if (/^\d+$/.test(input)) return input;
     const m = input.match(/roblox\.com\/games\/(\d+)/i);
-    if (m) return Number(m[1]);
+    if (m) return m[1];
     return null;
   }
 
-  /* ── DETAIL PANEL ── */
   const detailPanel    = document.getElementById('detailPanel');
   const detailBackdrop = document.getElementById('detailBackdrop');
   const detailContent  = document.getElementById('detailContent');
@@ -671,18 +663,19 @@
         </div>
         <div class="chart-empty">
           <div class="chart-empty-icon">📈</div>
-          <div class="chart-empty-text">History is being recorded.<br/>Check back after a few visits to see the chart.</div>
+          <div class="chart-empty-text">History is being recorded.<br/>Check back in a few minutes to see the chart.</div>
         </div>`;
       return;
     }
 
     const rawPts = history.slice(-168);
-    const pts = rawPts.length === 1 ? [rawPts[0], rawPts[0]] : rawPts;
+    const pts = rawPts.length === 1
+      ? [{ t: rawPts[0].t - 300, p: rawPts[0].p }, rawPts[0]]
+      : rawPts;
 
     const labels = pts.map(p => {
       const d   = new Date(p.t * 1000);
-      const now = Date.now();
-      const age = now - p.t * 1000;
+      const age = Date.now() - p.t * 1000;
       if (age < 86400000) {
         return d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
       }
@@ -694,12 +687,12 @@
     wrap.innerHTML = `
       <div class="chart-header">
         <span class="chart-title">Player Count History</span>
-        <span class="chart-pts">${pts.length} data point${pts.length !== 1 ? 's' : ''}</span>
+        <span class="chart-pts">${rawPts.length} data point${rawPts.length !== 1 ? 's' : ''}</span>
       </div>
       <div class="chart-canvas-wrap"><canvas id="playerChart"></canvas></div>`;
 
     const canvas = document.getElementById('playerChart');
-    canvas.style.width = '100%';
+    canvas.style.width  = '100%';
     canvas.style.height = '200px';
     const ctx = canvas.getContext('2d');
     if (activeChart) activeChart.destroy();
@@ -773,11 +766,11 @@
     detailContent.style.display = '';
     detailContent.style.height  = '';
 
-    const likeRatio   = g.likeRatio != null ? g.likeRatio + '%' : '—';
-    const creatorUrl  = g.creatorType === 'Group'
+    const likeRatio  = g.likeRatio != null ? g.likeRatio + '%' : '—';
+    const creatorUrl = g.creatorType === 'Group'
       ? `https://www.roblox.com/groups/${g.creatorId}`
       : `https://www.roblox.com/users/${g.creatorId}/profile`;
-    const hasDesc     = g.description && g.description.trim().length > 0;
+    const hasDesc    = g.description && g.description.trim().length > 0;
 
     detailContent.innerHTML = `
       <div class="detail-header">
@@ -865,9 +858,9 @@
     if (hasDesc) {
       const descEl   = document.getElementById('detailDesc');
       const toggleEl = document.getElementById('descToggle');
-      const needsToggle = g.description.length > 200;
-      if (!needsToggle) { toggleEl.style.display = 'none'; }
-      else {
+      if (g.description.length <= 200) {
+        toggleEl.style.display = 'none';
+      } else {
         toggleEl.addEventListener('click', () => {
           const expanded = descEl.classList.toggle('expanded');
           toggleEl.textContent = expanded ? 'Show less' : 'Show more';
@@ -889,7 +882,6 @@
     }
   }
 
-  /* ── LOOKUP MODAL ── */
   const modalOverlay = document.getElementById('modalOverlay');
 
   function openModal() { modalOverlay.classList.add('open'); document.getElementById('placeIdInput').focus(); }
@@ -929,14 +921,14 @@
         ? `<img class="lookup-thumb" src="${escHtml(g.iconUrl)}" alt="${escHtml(g.name)}"/>`
         : `<div class="lookup-thumb-placeholder">NO IMG</div>`;
 
-      document.getElementById('lookupName').textContent     = g.name;
-      document.getElementById('lsPlaying').textContent      = fmtStat(g.playerCount);
-      document.getElementById('lsVisits').textContent       = fmtStat(g.visits);
-      document.getElementById('lsFavs').textContent         = fmtStat(g.favorites);
-      document.getElementById('lsLikes').textContent        = fmtStat(g.likes);
-      document.getElementById('lsDislikes').textContent     = fmtStat(g.dislikes);
-      document.getElementById('lsRatio').textContent        = g.likeRatio != null ? g.likeRatio + '%' : 'N/A';
-      document.getElementById('lookupOpenBtn').onclick      = () => {
+      document.getElementById('lookupName').textContent  = g.name;
+      document.getElementById('lsPlaying').textContent   = fmtStat(g.playerCount);
+      document.getElementById('lsVisits').textContent    = fmtStat(g.visits);
+      document.getElementById('lsFavs').textContent      = fmtStat(g.favorites);
+      document.getElementById('lsLikes').textContent     = fmtStat(g.likes);
+      document.getElementById('lsDislikes').textContent  = fmtStat(g.dislikes);
+      document.getElementById('lsRatio').textContent     = g.likeRatio != null ? g.likeRatio + '%' : 'N/A';
+      document.getElementById('lookupOpenBtn').onclick   = () => {
         closeModal();
         openGameDetail(g.placeId);
       };
@@ -955,11 +947,8 @@
   document.getElementById('modalClose').addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
   document.getElementById('placeIdSubmit').addEventListener('click', doLookup);
-  document.getElementById('placeIdInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLookup();
-  });
+  document.getElementById('placeIdInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
 
-  /* ── CARD / GRID ── */
   function buildCard(g, rank) {
     const card = document.createElement('div');
     card.className = 'card';
