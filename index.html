@@ -557,10 +557,9 @@
 
   // Step 2: Get games for a sortId
   async function getSortContent(sortId) {
-    const data = await workerFetch({ action: 'get-sort-content', sessionId: SESSION_ID, sortId });
-    // Response shape: { games: [...] } or { Games: [...] }
-    return data.games || data.Games || data.content || data.Content || data.items || data.Items || [];
-  }
+  const data = await workerFetch({ action: 'get-sort-content', sessionId: SESSION_ID, sortId });
+  return data.games || [];
+}
 
   // Step 3: Enrich with detailed stats from games v2 API
   async function getGameDetails(universeIds) {
@@ -619,7 +618,7 @@
 
     games.forEach((g, i) => {
       const uid = g.universeId || g.UniverseId;
-      const pid = g.rootPlaceId || g.RootPlaceId || g.placeId || g.PlaceId;
+      const pid = g.rootPlaceId || g.placeId || g.PlaceId;
       const d = details[uid] || {};
 
       const name        = g.name || g.Name || d.name || '—';
