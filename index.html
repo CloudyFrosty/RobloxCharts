@@ -6,6 +6,7 @@
   <title>RobloxCharts</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     :root {
       --bg:      #07080f;
@@ -108,6 +109,7 @@
     .refresh-btn:hover { border-color:var(--accent); color:var(--accent); }
     .refresh-btn:disabled { opacity:0.4; cursor:not-allowed; }
 
+    /* ── LOOKUP MODAL ── */
     .modal-overlay {
       position:fixed; inset:0; z-index:500;
       background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
@@ -126,7 +128,6 @@
 
     .modal-title { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:2px; color:var(--text); margin-bottom:6px; }
     .modal-sub { font-family:'JetBrains Mono',monospace; font-size:0.62rem; color:var(--muted); letter-spacing:1px; margin-bottom:22px; line-height:1.6; }
-
     .modal-input-row { display:flex; gap:8px; margin-bottom:16px; }
 
     #placeIdInput {
@@ -169,6 +170,216 @@
     .modal-close { position:absolute; top:16px; right:16px; background:none; border:none; color:var(--muted); font-size:1.1rem; cursor:pointer; transition:color 0.15s; line-height:1; padding:4px; }
     .modal-close:hover { color:var(--text); }
 
+    /* ── DETAIL PANEL ── */
+    .detail-backdrop {
+      position:fixed; inset:0; z-index:300;
+      background:rgba(0,0,0,0.55); backdrop-filter:blur(4px);
+      opacity:0; pointer-events:none;
+      transition:opacity 0.25s ease;
+    }
+    .detail-backdrop.open { opacity:1; pointer-events:all; }
+
+    .detail-panel {
+      position:fixed; top:0; right:0; bottom:0; z-index:301;
+      width:min(640px, 100vw);
+      background:var(--surface);
+      border-left:1px solid var(--border);
+      display:flex; flex-direction:column;
+      transform:translateX(100%);
+      transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      overflow:hidden;
+    }
+    .detail-panel.open { transform:translateX(0); }
+
+    .detail-header {
+      position:relative;
+      flex-shrink:0;
+      height:220px;
+      overflow:hidden;
+    }
+    .detail-banner {
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+      filter:brightness(0.45) saturate(1.2);
+    }
+    .detail-banner-placeholder {
+      width:100%; height:100%;
+      background:linear-gradient(135deg, #0c0e18 0%, #111627 100%);
+    }
+    .detail-header-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(to bottom, transparent 20%, var(--surface) 100%);
+    }
+    .detail-close {
+      position:absolute; top:14px; right:14px;
+      background:rgba(7,8,15,0.7); border:1px solid var(--border);
+      color:var(--muted); font-size:1rem; cursor:pointer;
+      width:32px; height:32px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.15s; backdrop-filter:blur(8px);
+    }
+    .detail-close:hover { color:var(--text); border-color:rgba(255,255,255,0.25); }
+
+    .detail-identity {
+      position:absolute; bottom:14px; left:0; right:0;
+      padding:0 22px;
+      display:flex; align-items:flex-end; gap:14px;
+    }
+    .detail-thumb-sm {
+      width:72px; height:72px; border-radius:8px;
+      object-fit:cover; border:2px solid var(--border);
+      flex-shrink:0;
+    }
+    .detail-thumb-sm-placeholder {
+      width:72px; height:72px; border-radius:8px;
+      background:var(--card-bg); border:2px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-family:'JetBrains Mono',monospace; font-size:0.45rem; color:var(--muted);
+      flex-shrink:0;
+    }
+    .detail-title-block { min-width:0; }
+    .detail-game-name {
+      font-family:'Barlow Condensed',sans-serif; font-size:1.5rem;
+      font-weight:800; line-height:1.1; letter-spacing:0.3px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      margin-bottom:4px;
+    }
+    .detail-creator {
+      font-family:'JetBrains Mono',monospace; font-size:0.62rem;
+      color:var(--muted); letter-spacing:0.5px;
+    }
+    .detail-creator a {
+      color:var(--accent); text-decoration:none;
+    }
+    .detail-creator a:hover { text-decoration:underline; }
+
+    .detail-body {
+      flex:1; overflow-y:auto; padding:18px 22px 32px;
+    }
+    .detail-body::-webkit-scrollbar { width:4px; }
+    .detail-body::-webkit-scrollbar-track { background:transparent; }
+    .detail-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+    .detail-meta-row {
+      display:flex; gap:6px; flex-wrap:wrap; margin-bottom:18px; align-items:center;
+    }
+    .detail-badge {
+      font-family:'JetBrains Mono',monospace; font-size:0.58rem; letter-spacing:1px;
+      padding:4px 10px; border-radius:3px; text-transform:uppercase;
+    }
+    .detail-badge.genre  { color:var(--accent2); background:rgba(56,232,198,0.08); border:1px solid rgba(56,232,198,0.2); }
+    .detail-badge.roblox { color:var(--muted);   background:var(--card-bg);         border:1px solid var(--border); cursor:pointer; transition:all 0.15s; }
+    .detail-badge.roblox:hover { color:var(--text); border-color:rgba(255,255,255,0.25); }
+
+    .detail-description {
+      font-size:0.82rem; color:var(--muted); line-height:1.7;
+      margin-bottom:22px;
+      display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .detail-description.expanded { -webkit-line-clamp:unset; }
+    .desc-toggle {
+      background:none; border:none; color:var(--accent);
+      font-family:'JetBrains Mono',monospace; font-size:0.6rem; cursor:pointer;
+      margin-top:-14px; margin-bottom:18px; display:block; transition:opacity 0.15s;
+    }
+    .desc-toggle:hover { opacity:0.7; }
+
+    .detail-section-label {
+      font-family:'JetBrains Mono',monospace; font-size:0.58rem; color:var(--muted);
+      letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;
+    }
+
+    .detail-stats-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:22px;
+    }
+    .detail-stat {
+      background:var(--card-bg); border:1px solid var(--border);
+      border-radius:6px; padding:12px 14px;
+    }
+    .detail-stat-label {
+      font-family:'JetBrains Mono',monospace; font-size:0.5rem;
+      color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:3px;
+    }
+    .detail-stat-val {
+      font-family:'Barlow Condensed',sans-serif; font-size:1.2rem;
+      font-weight:700; letter-spacing:0.3px;
+    }
+    .detail-stat-val.green  { color:var(--green); }
+    .detail-stat-val.blue   { color:#6aaeff; }
+    .detail-stat-val.teal   { color:var(--accent2); }
+    .detail-stat-val.white  { color:var(--text); }
+    .detail-stat-val.red    { color:#ff6b6b; }
+    .detail-stat-val.muted  { color:var(--muted); }
+
+    .detail-info-grid {
+      display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin-bottom:22px;
+    }
+    .detail-info-item {
+      background:var(--card-bg); border:1px solid var(--border);
+      border-radius:6px; padding:10px 14px;
+    }
+    .detail-info-label {
+      font-family:'JetBrains Mono',monospace; font-size:0.5rem;
+      color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:2px;
+    }
+    .detail-info-val {
+      font-family:'Barlow Condensed',sans-serif; font-size:0.95rem;
+      font-weight:700; color:var(--text);
+    }
+
+    .detail-chart-wrap {
+      background:var(--card-bg); border:1px solid var(--border);
+      border-radius:8px; padding:18px 16px 14px;
+      margin-bottom:18px;
+    }
+    .chart-header {
+      display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;
+    }
+    .chart-title {
+      font-family:'Barlow Condensed',sans-serif; font-size:0.95rem;
+      font-weight:700; color:var(--text);
+    }
+    .chart-pts {
+      font-family:'JetBrains Mono',monospace; font-size:0.58rem; color:var(--muted);
+    }
+    .chart-canvas-wrap { position:relative; height:160px; }
+    .chart-empty {
+      height:160px; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:6px;
+    }
+    .chart-empty-icon { font-size:1.6rem; opacity:0.25; }
+    .chart-empty-text {
+      font-family:'JetBrains Mono',monospace; font-size:0.62rem;
+      color:var(--muted); letter-spacing:1px; text-align:center; line-height:1.7;
+    }
+
+    .detail-loading {
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:12px;
+    }
+    .detail-spinner {
+      width:32px; height:32px; border:2px solid var(--border);
+      border-top-color:var(--accent); border-radius:50%;
+      animation:spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .detail-loading-text {
+      font-family:'JetBrains Mono',monospace; font-size:0.65rem;
+      color:var(--muted); letter-spacing:1px;
+    }
+
+    .detail-error {
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:8px; padding:32px;
+    }
+    .detail-error-icon { font-size:2rem; opacity:0.3; }
+    .detail-error-text {
+      font-family:'JetBrains Mono',monospace; font-size:0.68rem;
+      color:#ff6b6b; text-align:center; line-height:1.6;
+    }
+
+    /* ── HERO ── */
     .hero { position:relative; z-index:1; padding:72px 48px 36px; max-width:1500px; margin:0 auto; }
     .hero-eyebrow { font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--accent); letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; opacity:0; animation:up 0.5s ease 0.05s both; }
     .hero h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(3.8rem,8.5vw,7.5rem); line-height:0.9; letter-spacing:3px; margin-bottom:22px; opacity:0; animation:up 0.5s ease 0.1s both; }
@@ -249,6 +460,8 @@
       .hero h1 { font-size:3.2rem; }
       .grid { grid-template-columns:repeat(2,1fr); }
       .page-btn { min-width:34px; height:34px; font-size:0.65rem; }
+      .detail-panel { width:100vw; }
+      .detail-stats-grid { grid-template-columns:repeat(2,1fr); }
     }
   </style>
 </head>
@@ -274,6 +487,7 @@
   </div>
 </header>
 
+<!-- Lookup modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <button class="modal-close" id="modalClose">✕</button>
@@ -307,6 +521,12 @@
       <button class="lookup-open-btn" id="lookupOpenBtn">Open on Roblox →</button>
     </div>
   </div>
+</div>
+
+<!-- Detail panel -->
+<div class="detail-backdrop" id="detailBackdrop"></div>
+<div class="detail-panel" id="detailPanel">
+  <div id="detailContent"></div>
 </div>
 
 <section class="hero">
@@ -348,6 +568,7 @@
   let currentPage  = 1;
   let detailCache  = {};
   let pageAbort    = null;
+  let activeChart  = null;
 
   const fmt = n => {
     if (n == null || isNaN(Number(n))) return null;
@@ -358,6 +579,12 @@
     return n.toLocaleString();
   };
   const fmtStat = n => fmt(n) ?? '—';
+
+  const fmtDate = iso => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+  };
 
   function animateCount(el, target) {
     if (!target) { el.textContent = fmtStat(target); return; }
@@ -390,6 +617,275 @@
     return null;
   }
 
+  /* ── DETAIL PANEL ── */
+  const detailPanel    = document.getElementById('detailPanel');
+  const detailBackdrop = document.getElementById('detailBackdrop');
+  const detailContent  = document.getElementById('detailContent');
+
+  function openDetailPanel() {
+    detailPanel.classList.add('open');
+    detailBackdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDetailPanel() {
+    detailPanel.classList.remove('open');
+    detailBackdrop.classList.remove('open');
+    document.body.style.overflow = '';
+    if (activeChart) { activeChart.destroy(); activeChart = null; }
+  }
+
+  detailBackdrop.addEventListener('click', closeDetailPanel);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailPanel(); closeModal(); } });
+
+  function showDetailLoading() {
+    if (activeChart) { activeChart.destroy(); activeChart = null; }
+    detailContent.innerHTML = `
+      <div class="detail-loading">
+        <div class="detail-spinner"></div>
+        <div class="detail-loading-text">Loading game data…</div>
+      </div>`;
+    detailContent.style.display = 'flex';
+    detailContent.style.height  = '100%';
+  }
+
+  function showDetailError(msg) {
+    detailContent.innerHTML = `
+      <div class="detail-error">
+        <div class="detail-error-icon">⚠</div>
+        <div class="detail-error-text">${escHtml(msg)}</div>
+      </div>`;
+    detailContent.style.display = 'flex';
+    detailContent.style.height  = '100%';
+  }
+
+  function renderChart(history) {
+    const wrap = document.getElementById('detailChartWrap');
+    if (!wrap) return;
+
+    if (!history || history.length < 2) {
+      wrap.innerHTML = `
+        <div class="chart-header">
+          <span class="chart-title">Player Count History</span>
+          <span class="chart-pts">0 data points</span>
+        </div>
+        <div class="chart-empty">
+          <div class="chart-empty-icon">📈</div>
+          <div class="chart-empty-text">History is being recorded.<br/>Check back after a few visits to see the chart.</div>
+        </div>`;
+      return;
+    }
+
+    const pts = history.slice(-168);
+
+    const labels = pts.map(p => {
+      const d   = new Date(p.t * 1000);
+      const now = Date.now();
+      const age = now - p.t * 1000;
+      if (age < 86400000) {
+        return d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
+      }
+      return d.toLocaleDateString('en-US', { month:'short', day:'numeric' }) + ' ' +
+             d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
+    });
+    const values = pts.map(p => p.p);
+
+    wrap.innerHTML = `
+      <div class="chart-header">
+        <span class="chart-title">Player Count History</span>
+        <span class="chart-pts">${pts.length} data point${pts.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="playerChart"></canvas></div>`;
+
+    const ctx = document.getElementById('playerChart').getContext('2d');
+    if (activeChart) activeChart.destroy();
+
+    activeChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          borderColor: '#3a7ff7',
+          backgroundColor: ctx => {
+            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 160);
+            gradient.addColorStop(0, 'rgba(58,127,247,0.25)');
+            gradient.addColorStop(1, 'rgba(58,127,247,0)');
+            return gradient;
+          },
+          borderWidth: 2,
+          pointRadius: pts.length > 40 ? 0 : 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#3a7ff7',
+          fill: true,
+          tension: 0.4,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0c0e18',
+            borderColor: '#181d2e',
+            borderWidth: 1,
+            titleColor: '#6d748d',
+            bodyColor: '#edf0ff',
+            titleFont: { family: 'JetBrains Mono', size: 10 },
+            bodyFont:  { family: 'Barlow Condensed', size: 14, weight: 'bold' },
+            callbacks: {
+              label: ctx => ' ' + fmtStat(ctx.raw) + ' playing',
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: '#6d748d',
+              font: { family: 'JetBrains Mono', size: 9 },
+              maxTicksLimit: 6,
+              maxRotation: 0,
+            },
+            grid: { color: 'rgba(255,255,255,0.03)' },
+            border: { color: '#181d2e' },
+          },
+          y: {
+            ticks: {
+              color: '#6d748d',
+              font: { family: 'JetBrains Mono', size: 9 },
+              callback: v => fmtStat(v),
+            },
+            grid: { color: 'rgba(255,255,255,0.03)' },
+            border: { color: '#181d2e' },
+          },
+        },
+      },
+    });
+  }
+
+  function renderDetailPanel(g, history) {
+    detailContent.style.display = '';
+    detailContent.style.height  = '';
+
+    const likeRatio   = g.likeRatio != null ? g.likeRatio + '%' : '—';
+    const creatorUrl  = g.creatorType === 'Group'
+      ? `https://www.roblox.com/groups/${g.creatorId}`
+      : `https://www.roblox.com/users/${g.creatorId}/profile`;
+    const hasDesc     = g.description && g.description.trim().length > 0;
+
+    detailContent.innerHTML = `
+      <div class="detail-header">
+        ${g.iconUrl
+          ? `<img class="detail-banner" src="${escHtml(g.iconUrl)}" alt=""/>`
+          : `<div class="detail-banner-placeholder"></div>`}
+        <div class="detail-header-overlay"></div>
+        <button class="detail-close" id="detailCloseBtn">✕</button>
+        <div class="detail-identity">
+          ${g.iconUrl
+            ? `<img class="detail-thumb-sm" src="${escHtml(g.iconUrl)}" alt="${escHtml(g.name)}"/>`
+            : `<div class="detail-thumb-sm-placeholder">NO IMG</div>`}
+          <div class="detail-title-block">
+            <div class="detail-game-name" title="${escHtml(g.name)}">${escHtml(g.name)}</div>
+            <div class="detail-creator">by <a href="${escHtml(creatorUrl)}" target="_blank" rel="noopener">${escHtml(g.creator)}</a> · ${escHtml(g.creatorType)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <div class="detail-meta-row">
+          ${g.genre && g.genre !== 'All' ? `<span class="detail-badge genre">${escHtml(g.genre)}</span>` : ''}
+          <span class="detail-badge roblox" id="detailOpenRoblox">Open on Roblox ↗</span>
+        </div>
+
+        ${hasDesc ? `<div class="detail-description" id="detailDesc">${escHtml(g.description)}</div>
+        <button class="desc-toggle" id="descToggle">Show more</button>` : ''}
+
+        <div class="detail-section-label">Live Stats</div>
+        <div class="detail-stats-grid">
+          <div class="detail-stat">
+            <div class="detail-stat-label">Playing Now</div>
+            <div class="detail-stat-val green">${fmtStat(g.playerCount)}</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Total Visits</div>
+            <div class="detail-stat-val blue">${fmtStat(g.visits)}</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Favorites</div>
+            <div class="detail-stat-val teal">${fmtStat(g.favorites)}</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Upvotes</div>
+            <div class="detail-stat-val green">${fmtStat(g.likes)}</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Downvotes</div>
+            <div class="detail-stat-val red">${fmtStat(g.dislikes)}</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Like Ratio</div>
+            <div class="detail-stat-val white">${likeRatio}</div>
+          </div>
+        </div>
+
+        <div class="detail-section-label">Game Info</div>
+        <div class="detail-info-grid">
+          <div class="detail-info-item">
+            <div class="detail-info-label">Created</div>
+            <div class="detail-info-val">${fmtDate(g.created)}</div>
+          </div>
+          <div class="detail-info-item">
+            <div class="detail-info-label">Last Updated</div>
+            <div class="detail-info-val">${fmtDate(g.updated)}</div>
+          </div>
+          <div class="detail-info-item">
+            <div class="detail-info-label">Max Players</div>
+            <div class="detail-info-val">${g.maxPlayers ?? '—'}</div>
+          </div>
+          <div class="detail-info-item">
+            <div class="detail-info-label">Place ID</div>
+            <div class="detail-info-val">${g.placeId}</div>
+          </div>
+        </div>
+
+        <div class="detail-chart-wrap" id="detailChartWrap"></div>
+      </div>`;
+
+    document.getElementById('detailCloseBtn').addEventListener('click', closeDetailPanel);
+    document.getElementById('detailOpenRoblox').addEventListener('click', () => {
+      window.open(`https://www.roblox.com/games/${g.placeId}`, '_blank');
+    });
+
+    if (hasDesc) {
+      const descEl   = document.getElementById('detailDesc');
+      const toggleEl = document.getElementById('descToggle');
+      const needsToggle = g.description.length > 200;
+      if (!needsToggle) { toggleEl.style.display = 'none'; }
+      else {
+        toggleEl.addEventListener('click', () => {
+          const expanded = descEl.classList.toggle('expanded');
+          toggleEl.textContent = expanded ? 'Show less' : 'Show more';
+        });
+      }
+    }
+
+    renderChart(history);
+  }
+
+  async function openGameDetail(placeId) {
+    openDetailPanel();
+    showDetailLoading();
+    try {
+      const data = await workerFetch({ action: 'get-game-detail', placeId });
+      renderDetailPanel(data.game, data.history);
+    } catch(err) {
+      showDetailError(err.message);
+    }
+  }
+
+  /* ── LOOKUP MODAL ── */
   const modalOverlay = document.getElementById('modalOverlay');
 
   function openModal() { modalOverlay.classList.add('open'); document.getElementById('placeIdInput').focus(); }
@@ -435,8 +931,11 @@
       document.getElementById('lsFavs').textContent         = fmtStat(g.favorites);
       document.getElementById('lsLikes').textContent        = fmtStat(g.likes);
       document.getElementById('lsDislikes').textContent     = fmtStat(g.dislikes);
-      document.getElementById('lsRatio').textContent        = g.likeRatio != null ? g.likeRatio+'%' : 'N/A';
-      document.getElementById('lookupOpenBtn').onclick      = () => window.open(`https://www.roblox.com/games/${g.placeId}`, '_blank');
+      document.getElementById('lsRatio').textContent        = g.likeRatio != null ? g.likeRatio + '%' : 'N/A';
+      document.getElementById('lookupOpenBtn').onclick      = () => {
+        closeModal();
+        openGameDetail(g.placeId);
+      };
 
       resEl.classList.add('visible');
     } catch(err) {
@@ -454,10 +953,9 @@
   document.getElementById('placeIdSubmit').addEventListener('click', doLookup);
   document.getElementById('placeIdInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLookup();
-    if (e.key === 'Escape') closeModal();
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+  /* ── CARD / GRID ── */
   function buildCard(g, rank) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -468,15 +966,10 @@
     const loaded = detail !== undefined && detail !== null;
 
     const sv = (field, cls, suffix='') => {
-      if (!loaded) {
-        return `<div class="stat-val pending" data-field="${field}">…</div>`;
-      }
+      if (!loaded) return `<div class="stat-val pending" data-field="${field}">…</div>`;
       const val = detail[field];
-      if (val == null) {
-        return `<div class="stat-val muted" data-field="${field}">—</div>`;
-      }
-      const display = suffix ? val + suffix : fmtStat(val);
-      return `<div class="stat-val ${cls}" data-field="${field}">${display}</div>`;
+      if (val == null) return `<div class="stat-val muted" data-field="${field}">—</div>`;
+      return `<div class="stat-val ${cls}" data-field="${field}">${suffix ? val + suffix : fmtStat(val)}</div>`;
     };
 
     card.innerHTML = `
@@ -496,7 +989,7 @@
         </div>
       </div>`;
 
-    card.addEventListener('click', () => window.open(`https://www.roblox.com/games/${g.placeId}`, '_blank'));
+    card.addEventListener('click', () => openGameDetail(g.placeId));
     return card;
   }
 
@@ -524,7 +1017,6 @@
   async function fetchDetailsForPage(games, signal) {
     const ids = games.map(g => g.placeId).filter(id => id && !detailCache[id]);
     if (!ids.length) return;
-
     for (let i = 0; i < ids.length; i += 25) {
       if (signal?.aborted) return;
       const batch = ids.slice(i, i + 25);
