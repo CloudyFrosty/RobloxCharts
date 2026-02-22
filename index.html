@@ -453,6 +453,7 @@
 
 <script>
   // ── PARTICLES ──────────────────────────────────────────
+  // ── PARTICLES ──────────────────────────────────────────
   (function() {
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
@@ -482,15 +483,9 @@
   })();
 
   // ── CONFIG ─────────────────────────────────────────────
-  // ⚠️  REPLACE THIS with your actual Cloudflare Worker URL
   const WORKER_URL = 'https://young-resonance-128e.frostyknight2354.workers.dev';
-
   let currentSort = 'TopCharts';
-  // Session ID is generated once per page load and reused
   const SESSION_ID = crypto.randomUUID();
-
-  // Cache sortId lookups so we don't re-fetch sorts every time
-  let sortIdCache = null;
 
   function fmt(n) {
     if (n == null) return '—';
@@ -501,8 +496,7 @@
   }
 
   function animateCount(el, target) {
-    const duration = 800;
-    const startTime = performance.now();
+    const duration = 800, startTime = performance.now();
     function step(now) {
       const p = Math.min((now - startTime) / duration, 1);
       const ease = 1 - Math.pow(1 - p, 3);
@@ -513,7 +507,6 @@
     requestAnimationFrame(step);
   }
 
-  // ── API HELPERS ────────────────────────────────────────
   async function workerFetch(params) {
     const url = WORKER_URL + '?' + new URLSearchParams(params).toString();
     const res = await fetch(url);
@@ -521,70 +514,6 @@
     return res.json();
   }
 
-  // Step 1: Get available sorts and find the sortId for our desired sort name
-  async function getSortId(sortName) {
-    if (sortIdCache && sortIdCache[sortName]) return sortIdCache[sortName];
-
-    const data = await workerFetch({ action: 'get-sorts', sessionId: SESSION_ID });
-
-    // The response has a "sorts" array; each sort has a "name" and "topic" or "contentType"
-    // We need to find the matching sort and grab its sortId / topic
-    const sorts = data.sorts || data.Sorts || [];
-    if (!sorts.length) throw new Error('No sorts returned: ' + JSON.stringify(data).slice(0, 200));
-
-    // Build a cache of all sort names → sortId
-    sortIdCache = {};
-    sorts.forEach(s => {
-      // sortId might be in different fields depending on the response shape
-      const id = s.sortId || s.SortId || s.topic || s.Topic || s.name || s.Name;
-      const name = s.name || s.Name || s.topic || s.Topic || '';
-      if (id) sortIdCache[name] = id;
-    });
-
-    // Fuzzy match: find the sort that includes sortName (case-insensitive)
-    const key = Object.keys(sortIdCache).find(k =>
-      k.toLowerCase().includes(sortName.toLowerCase()) ||
-      sortName.toLowerCase().includes(k.toLowerCase())
-    );
-
-    if (key) return sortIdCache[key];
-
-    // Fallback: return the first sortId available
-    const firstKey = Object.keys(sortIdCache)[0];
-    console.warn(`Sort "${sortName}" not found, using fallback: ${firstKey}`);
-    return sortIdCache[firstKey];
-  }
-
-  // Step 2: Get games for a sortId
-  async function getSortContent(sortId) {
-  const data = await workerFetch({ action: 'get-sort-content', sessionId: SESSION_ID, sortId });
-  return data.games || [];
-}
-
-  // Step 3: Enrich with detailed stats from games v2 API
-  async function getGameDetails(universeIds) {
-    if (!universeIds.length) return {};
-    const data = await workerFetch({ action: 'game-details', ids: universeIds.join(',') });
-    const map = {};
-    (data.data || data.Data || []).forEach(g => { map[g.id || g.universeId] = g; });
-    return map;
-  }
-
-  // Step 4: Get thumbnails
-  async function getThumbnails(universeIds) {
-    if (!universeIds.length) return {};
-    try {
-      const data = await workerFetch({ action: 'thumbnails', ids: universeIds.join(',') });
-      const map = {};
-      (data.data || []).forEach(item => {
-        const t = item.thumbnails?.[0];
-        if (t?.imageUrl) map[item.universeId] = t.imageUrl;
-      });
-      return map;
-    } catch { return {}; }
-  }
-
-  // ── SKELETONS ──────────────────────────────────────────
   function showSkeletons() {
     document.getElementById('gameGrid').innerHTML = Array(12).fill(`
       <div class="skeleton">
@@ -597,107 +526,62 @@
       </div>`).join('');
   }
 
-  // ── RENDER ─────────────────────────────────────────────
-  function renderCards(games, details, thumbs) {
+  function renderCards(games) {
     const grid = document.getElementById('gameGrid');
     grid.innerHTML = '';
 
     if (!games.length) {
-      grid.innerHTML = `<div class="error-box"><h2>No games found</h2><p>Could not load games from this sort. Try a different category or refresh.</p></div>`;
+      grid.innerHTML = `<div class="error-box"><h2>No games found</h2><p>Could not load games. Try refreshing.</p></div>`;
       return;
     }
 
-    const total = games.reduce((s, g) => {
-      const d = details[g.universeId || g.UniverseId];
-      return s + (d?.playing || d?.playerCount || g.playerCount || g.PlayerCount || 0);
-    }, 0);
-
+    const total = games.reduce((s, g) => s + (g.playerCount || 0), 0);
     animateCount(document.getElementById('totalPlaying'), total);
     document.getElementById('gamesTracked').textContent = games.length;
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
 
     games.forEach((g, i) => {
-      const uid = g.universeId || g.UniverseId;
-      const pid = g.rootPlaceId || g.placeId || g.PlaceId;
-      const d = details[uid] || {};
-
-      const name        = g.name || g.Name || d.name || '—';
-      const playerCount = d.playing ?? d.playerCount ?? g.playerCount ?? g.PlayerCount ?? null;
-      const visits      = d.visits ?? g.totalVisits ?? g.TotalVisits ?? null;
-      const upVotes     = d.upVotes ?? g.totalUpVotes ?? g.TotalUpVotes ?? null;
-      const favCount    = d.favoritedCount ?? g.favoritedCount ?? g.FavoritedCount ?? null;
-      const thumb       = thumbs[uid];
-
       const card = document.createElement('div');
       card.className = 'card';
       card.style.animationDelay = (i % 12) * 45 + 'ms';
 
       const isTop3 = i < 3;
-      const rankLabels = ['#1', '#2', '#3'];
+      const rankLabel = isTop3 ? ['#1','#2','#3'][i] : `# ${i+1}`;
+      const thumb = g.iconUrl;
 
       card.innerHTML = `
         <div class="card-thumb-wrap">
           ${thumb
-            ? `<img class="card-thumb" src="${thumb}" alt="${name}" loading="lazy"/>`
+            ? `<img class="card-thumb" src="${thumb}" alt="${g.name}" loading="lazy" style="object-fit:cover"/>`
             : `<div class="card-thumb-placeholder">NO IMAGE</div>`}
-          <div class="card-rank-badge ${isTop3 ? 'top3' : ''}">
-            ${isTop3 ? rankLabels[i] : '# ' + (i+1)}
-          </div>
+          <div class="card-rank-badge ${isTop3 ? 'top3' : ''}">${rankLabel}</div>
         </div>
         <div class="card-body">
-          <div class="card-name">${name}</div>
+          <div class="card-name">${g.name}</div>
           <div class="card-stats">
-            <div class="stat">
-              <div class="stat-label">Playing</div>
-              <div class="stat-value green">${fmt(playerCount)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Visits</div>
-              <div class="stat-value blue">${fmt(visits)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Likes</div>
-              <div class="stat-value white">${fmt(upVotes)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Favorites</div>
-              <div class="stat-value teal">${fmt(favCount)}</div>
-            </div>
+            <div class="stat"><div class="stat-label">Playing</div><div class="stat-value green">${fmt(g.playerCount)}</div></div>
+            <div class="stat"><div class="stat-label">Visits</div><div class="stat-value blue">${fmt(g.visits ?? null)}</div></div>
+            <div class="stat"><div class="stat-label">Likes</div><div class="stat-value white">${fmt(g.upVotes ?? null)}</div></div>
+            <div class="stat"><div class="stat-label">Favorites</div><div class="stat-value teal">${fmt(g.favoritedCount ?? null)}</div></div>
           </div>
         </div>`;
 
-      if (pid) {
-        card.addEventListener('click', () => window.open(`https://www.roblox.com/games/${pid}`, '_blank'));
+      if (g.rootPlaceId) {
+        card.addEventListener('click', () => window.open(`https://www.roblox.com/games/${g.rootPlaceId}`, '_blank'));
       }
       grid.appendChild(card);
     });
   }
 
-  // ── LOAD ───────────────────────────────────────────────
   async function load(sortName) {
     showSkeletons();
     try {
-      // 1. Get the correct sortId for this sort name
-      const sortId = await getSortId(sortName);
-      console.log(`Using sortId "${sortId}" for sort "${sortName}"`);
-
-      // 2. Get game list
-      const games = await getSortContent(sortId);
-      console.log('Games received:', games.length, games[0]);
-
-      if (!games.length) throw new Error('No games in sort content response');
-
-      // 3. Enrich with details + thumbnails in parallel
-      const universeIds = games.map(g => g.universeId || g.UniverseId).filter(Boolean);
-      const [details, thumbs] = await Promise.all([
-        getGameDetails(universeIds),
-        getThumbnails(universeIds),
-      ]);
-
-      renderCards(games, details, thumbs);
-
+      const data = await workerFetch({ action: 'get-sort-content', sortId: sortName });
+      const games = data.games || [];
+      if (!games.length) throw new Error('No games returned');
+      renderCards(games);
     } catch (err) {
-      console.error('Load error:', err);
+      console.error(err);
       document.getElementById('gameGrid').innerHTML = `
         <div class="error-box">
           <h2>Couldn't load games</h2>
@@ -707,20 +591,16 @@
     }
   }
 
-  // ── CONTROLS ───────────────────────────────────────────
   document.querySelectorAll('.sort-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentSort = btn.dataset.sort;
-      sortIdCache = null; // reset cache on sort change so we re-discover
       load(currentSort);
     });
   });
 
   document.getElementById('refreshBtn').addEventListener('click', () => load(currentSort));
-
-  // ── INIT ───────────────────────────────────────────────
   load(currentSort);
   setInterval(() => load(currentSort), 60_000);
 </script>
