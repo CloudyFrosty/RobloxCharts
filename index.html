@@ -556,13 +556,12 @@
     const detail = detailCache[g.placeId];
     const loaded = !!detail;
 
-    // visits/favorites come from detail fetch; likes/ratio come from Rolimons directly
-    const sv = (field, cls) =>
-      `<div class="stat-val ${loaded ? cls : 'pending'}" data-field="${field}">${loaded ? fmtStat(detail[field]) : '…'}</div>`;
-
-    // Like ratio: prefer detail fetch result, fall back to Rolimons data
-    const likeRatio = loaded && detail.likeRatio != null ? detail.likeRatio : (g.likeRatio ?? null);
-    const likes     = loaded && detail.likes     != null ? detail.likes     : (g.likes     ?? null);
+    // All detail stats come from the detail fetch (visits, favorites, likes, likeRatio)
+    const sv = (field, cls, suffix='') => {
+      const val = loaded ? detail[field] : null;
+      const display = val != null ? (suffix ? val+suffix : fmtStat(val)) : '…';
+      return `<div class="stat-val ${loaded ? cls : 'pending'}" data-field="${field}">${display}</div>`;
+    };
 
     card.innerHTML = `
       <div class="card-thumb-wrap">
@@ -577,7 +576,7 @@
           <div class="stat"><div class="stat-label">Playing</div><div class="stat-val green">${fmtStat(g.playerCount)}</div></div>
           <div class="stat"><div class="stat-label">Visits</div>${sv('visits','blue')}</div>
           <div class="stat"><div class="stat-label">Favorites</div>${sv('favorites','teal')}</div>
-          <div class="stat"><div class="stat-label">Like Ratio</div><div class="stat-val white" data-field="likeRatio">${likeRatio != null ? likeRatio+'%' : '—'}</div></div>
+          <div class="stat"><div class="stat-label">Like Ratio</div>${sv('likeRatio','white','%')}</div>
         </div>
       </div>`;
 
@@ -594,21 +593,27 @@
       detailCache[placeId] = d;
       const card = document.querySelector(`.card[data-placeid="${placeId}"]`);
       if (!card) return;
-      [['visits','blue'],['favorites','teal'],['likeRatio','white']].forEach(([field,cls]) => {
+      [['visits','blue'],['favorites','teal'],['likes','white'],['likeRatio','white']].forEach(([field,cls]) => {
         const el = card.querySelector(`[data-field="${field}"]`);
         if (!el) return;
-        el.textContent = field === 'likeRatio' ? (d[field] != null ? d[field]+'%' : '—') : fmtStat(d[field]);
+        el.textContent = field === 'likeRatio'
+          ? (d[field] != null ? d[field]+'%' : '—')
+          : (field === 'likes' ? fmtStat(d[field]) : fmtStat(d[field]));
         el.className   = `stat-val ${cls}`;
       });
     });
   }
 
   // ── FETCH DETAILS ────────────────────────────────────────
+  // Fetch details for a specific list of games (just the current page)
+  // Worker scrapes universeId per game, so keep batches small (20 max)
   async function fetchDetails(games, signal) {
-    const ids = games.map(g => g.placeId).filter(Boolean);
-    for (let i = 0; i < ids.length; i += DETAIL_BATCH) {
+    const ids = games.map(g => g.placeId).filter(id => id && !detailCache[id]);
+    if (!ids.length) return;
+    // Use batch of 20 — scraping 20 pages in parallel is fast enough
+    for (let i = 0; i < ids.length; i += 20) {
       if (signal?.aborted) return;
-      const batch = ids.slice(i, i+DETAIL_BATCH);
+      const batch = ids.slice(i, i + 20);
       try {
         const data = await workerFetch({ action:'get-details', placeIds:batch.join(',') }, signal);
         if (data.details) patchCardDetails(data.details);
@@ -702,9 +707,8 @@
     grid.appendChild(frag);
     renderPagination();
 
-    // Eager fetch details for uncached games on this page
-    const uncached = slice.filter(g => !detailCache[g.placeId]);
-    if (uncached.length) fetchDetails(uncached, detailAbort?.signal);
+    // Only fetch details for the current page's games
+    fetchDetails(slice, detailAbort?.signal);
   }
 
   function setVisibleGames(games) {
@@ -781,7 +785,7 @@
       document.getElementById('searchClear').classList.remove('visible');
 
       setVisibleGames(allGames);
-      fetchDetails(allGames, detailAbort.signal);
+      // Details are fetched per-page in renderPage — no bulk prefetch needed
 
     } catch(err) {
       if (err.name === 'AbortError') return;
