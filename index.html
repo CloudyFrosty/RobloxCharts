@@ -275,9 +275,9 @@
     .detail-description {
       font-size:0.82rem; color:var(--muted); line-height:1.7;
       margin-bottom:22px;
-      display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+      display:-webkit-box; -webkit-line-clamp:4; line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
     }
-    .detail-description.expanded { -webkit-line-clamp:unset; }
+    .detail-description.expanded { -webkit-line-clamp:unset; line-clamp:unset; }
     .desc-toggle {
       background:none; border:none; color:var(--accent);
       font-family:'JetBrains Mono',monospace; font-size:0.6rem; cursor:pointer;
