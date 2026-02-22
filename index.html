@@ -127,8 +127,6 @@
       cursor:pointer; transition:all 0.15s;
     }
     .refresh-btn:hover { border-color:var(--accent); color:var(--accent); }
-    .refresh-btn.spinning { animation: spin 0.6s linear; }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── HERO ── */
     .hero {
@@ -270,11 +268,11 @@
       padding:2px 8px; border-radius:3px;
       background:rgba(7,8,15,0.75);
       backdrop-filter:blur(6px);
-      border:1px solid rgba(255,255,255,0.07);
-      color:var(--muted);
+      border:1px solid rgba(255,255,255,0.12);
+      color:var(--text);
       line-height:1.4;
     }
-    .card-rank.top1, .card-rank.top2, .card-rank.top3 { color:var(--text); border-color:rgba(255,255,255,0.12); }
+
 
     .card-thumb-wrap { position:relative; overflow:hidden; background:var(--surface); }
     .card-thumb {
@@ -589,10 +587,6 @@
     if (loading) return;
     loading = true;
     detailCache = {}; // clear cache on new load
-
-    const btn = document.getElementById('refreshBtn');
-    btn.classList.add('spinning');
-    setTimeout(() => btn.classList.remove('spinning'), 600);
 
     showSkeletons();
 
