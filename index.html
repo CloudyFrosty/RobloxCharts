@@ -1,365 +1,334 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RobloxCharts — Top Games</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RobloxCharts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg:      #0a0c12;
-      --surface: #10131c;
-      --card:    #14182400;
-      --border:  #1e2436;
-      --accent:  #4f8ef7;
-      --accent2: #38e8c6;
-      --text:    #e8eaf2;
-      --muted:   #5a6180;
-      --green:   #3ecf6e;
+      --bg:       #08090d;
+      --surface:  #0e1018;
+      --border:   #1a1f2e;
+      --accent:   #4f8ef7;
+      --accent2:  #38e8c6;
+      --blue:     #4f8ef7;
+      --text:     #f0f2ff;
+      --muted:    #4a5170;
+      --green:    #39e07a;
+      --card-bg:  #0b0d15;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Syne', sans-serif;
+      font-family: 'Barlow', sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
-      background-size: 48px 48px;
-      pointer-events: none; z-index: 0;
-    }
-
+    /* ── GRID PATTERN ── */
     body::after {
       content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px);
+      background-size: 52px 52px;
+      pointer-events: none;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+    }
+
+    /* ── HERO GLOW ── */
+    .hero-glow {
       position: fixed;
-      top: -30vh; left: 50%;
+      top: -20vh; left: 50%;
       transform: translateX(-50%);
-      width: 80vw; height: 60vh;
-      background: radial-gradient(ellipse, rgba(79,142,247,0.08) 0%, transparent 70%);
+      width: 900px; height: 500px;
+      background: radial-gradient(ellipse, rgba(79,142,247,0.07) 0%, transparent 65%);
       pointer-events: none; z-index: 0;
     }
 
-    #particles {
-      position: fixed; inset: 0;
-      pointer-events: none; z-index: 0;
-      opacity: 0.5;
-    }
-
+    /* ── HEADER ── */
     header {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(10,12,18,0.8);
-      backdrop-filter: blur(24px);
+      background: rgba(8,9,13,0.85);
+      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
-      padding: 0 36px; height: 64px;
+      padding: 0 48px; height: 60px;
       display: flex; align-items: center; justify-content: space-between;
     }
 
     .logo {
-      font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px;
-      display: flex; align-items: center; gap: 10px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem; letter-spacing: 2px;
+      color: var(--text);
     }
 
-    .logo-icon {
-      width: 32px; height: 32px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.6rem; font-weight: 800; letter-spacing: -0.5px;
-      color: #fff;
-      box-shadow: 0 0 20px rgba(79,142,247,0.4);
-      animation: logoGlow 3s ease-in-out infinite;
-    }
+    .logo span { color: var(--accent); }
 
-    @keyframes logoGlow {
-      0%,100% { box-shadow: 0 0 20px rgba(79,142,247,0.4); }
-      50%      { box-shadow: 0 0 35px rgba(56,232,198,0.5); }
-    }
-
-    .header-right { display: flex; align-items: center; gap: 12px; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
 
     .live-badge {
       display: flex; align-items: center; gap: 6px;
-      background: rgba(62,207,110,0.1);
-      border: 1px solid rgba(62,207,110,0.2);
-      color: var(--green);
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 1.2px;
-      padding: 5px 12px; border-radius: 20px; text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; font-weight: 500; letter-spacing: 1.5px;
+      color: var(--green); text-transform: uppercase;
+      background: rgba(57,224,122,0.08);
+      border: 1px solid rgba(57,224,122,0.2);
+      padding: 5px 12px; border-radius: 4px;
     }
 
     .live-dot {
-      width: 6px; height: 6px; border-radius: 50%;
+      width: 5px; height: 5px; border-radius: 50%;
       background: var(--green);
-      animation: livePulse 1.4s ease-in-out infinite;
+      animation: pulse 1.6s ease-in-out infinite;
     }
 
-    @keyframes livePulse {
-      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(62,207,110,0.4); }
-      50%      { opacity: 0.7; box-shadow: 0 0 0 4px rgba(62,207,110,0); }
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
 
     .refresh-btn {
-      background: var(--surface);
+      background: transparent;
       border: 1px solid var(--border);
       color: var(--muted);
-      font-family: 'Syne', sans-serif;
-      font-size: 0.75rem; font-weight: 600;
-      padding: 6px 14px; border-radius: 8px;
-      cursor: pointer; transition: all 0.2s;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; font-weight: 500;
+      padding: 6px 14px; border-radius: 4px;
+      cursor: pointer; transition: all 0.15s;
     }
     .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+    /* ── HERO ── */
     .hero {
       position: relative; z-index: 1;
-      padding: 100px 36px 48px;
-      max-width: 1400px; margin: 0 auto;
+      padding: 80px 48px 40px;
+      max-width: 1500px; margin: 0 auto;
     }
 
     .hero-eyebrow {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem; color: var(--accent);
-      letter-spacing: 2px; text-transform: uppercase;
-      margin-bottom: 14px;
-      opacity: 0; animation: slideIn 0.6s ease 0.1s both;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; color: var(--accent);
+      letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 12px;
+      opacity: 0; animation: up 0.5s ease 0.05s both;
     }
 
     .hero h1 {
-      font-size: clamp(3rem, 6vw, 5.5rem);
-      font-weight: 800; line-height: 1.05; letter-spacing: -2px;
-      margin-bottom: 16px;
-      opacity: 0; animation: slideIn 0.6s ease 0.2s both;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 9vw, 8rem);
+      line-height: 0.92; letter-spacing: 2px;
+      margin-bottom: 20px;
+      opacity: 0; animation: up 0.5s ease 0.1s both;
     }
 
-    .hero h1 .grad {
-      background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-      background-size: 200%; animation: gradShift 4s ease infinite;
+    .hero h1 .outline {
+      -webkit-text-stroke: 1.5px rgba(240,242,255,0.25);
+      color: transparent;
     }
 
-    @keyframes gradShift {
-      0%,100% { background-position: 0% 50%; }
-      50%      { background-position: 100% 50%; }
+    .hero h1 .blue-text { color: var(--accent); }
+
+    .hero-sub {
+      color: var(--muted); font-size: 0.95rem; font-weight: 400;
+      max-width: 440px; line-height: 1.7;
+      opacity: 0; animation: up 0.5s ease 0.15s both;
     }
 
-    .hero p {
-      color: var(--muted); font-size: 1.1rem; max-width: 520px; line-height: 1.8;
-      opacity: 0; animation: slideIn 0.6s ease 0.3s both;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(20px); }
+    @keyframes up {
+      from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ── STATS BAR ── */
     .stats-bar {
       position: relative; z-index: 1;
-      max-width: 1400px; margin: 0 auto;
-      padding: 0 36px 28px;
-      display: flex; gap: 16px; flex-wrap: wrap;
-      opacity: 0; animation: slideIn 0.6s ease 0.4s both;
+      max-width: 1500px; margin: 0 auto;
+      padding: 0 48px 32px;
+      display: flex; gap: 2px; flex-wrap: wrap;
+      opacity: 0; animation: up 0.5s ease 0.2s both;
     }
 
     .stat-pill {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 18px;
-      display: flex; align-items: center; gap: 10px;
+      padding: 12px 24px;
+      display: flex; align-items: center; gap: 12px;
     }
 
-    .stat-pill-icon { font-size: 1rem; }
-    .stat-pill-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
-    .stat-pill-val   { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    .stat-pill:first-child { border-radius: 6px 0 0 6px; }
+    .stat-pill:last-child  { border-radius: 0 6px 6px 0; }
 
+    .stat-pill-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem; color: var(--muted);
+      letter-spacing: 1.5px; text-transform: uppercase;
+    }
+
+    .stat-pill-val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.3rem; font-weight: 700; color: var(--text);
+      letter-spacing: 1px;
+    }
+
+    /* ── CONTROLS ── */
     .controls {
       position: relative; z-index: 1;
-      max-width: 1400px; margin: 0 auto;
-      padding: 0 36px 24px;
-      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      max-width: 1500px; margin: 0 auto;
+      padding: 0 48px 28px;
+      display: flex; align-items: center; gap: 6px;
+      opacity: 0; animation: up 0.5s ease 0.25s both;
     }
 
     .controls-label {
-      color: var(--muted); font-size: 0.72rem; font-weight: 700;
-      letter-spacing: 1.2px; text-transform: uppercase; margin-right: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted); font-size: 0.62rem;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      margin-right: 8px;
     }
 
     .sort-btn {
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--muted);
-      font-family: 'Syne', sans-serif;
-      font-size: 0.78rem; font-weight: 600;
-      padding: 8px 18px; border-radius: 8px;
-      cursor: pointer; transition: all 0.2s ease;
-      position: relative; overflow: hidden;
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.8rem; font-weight: 600;
+      padding: 8px 20px; border-radius: 4px;
+      cursor: pointer; transition: all 0.15s;
+      letter-spacing: 0.5px;
     }
 
-    .sort-btn::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(79,142,247,0.15), transparent);
-      opacity: 0; transition: opacity 0.2s;
-    }
+    .sort-btn:hover { border-color: rgba(79,142,247,0.5); color: var(--text); }
 
-    .sort-btn:hover { border-color: var(--accent); color: var(--text); }
-    .sort-btn:hover::after { opacity: 1; }
     .sort-btn.active {
-      border-color: var(--accent); color: var(--accent);
-      background: rgba(79,142,247,0.1);
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
     }
-    .sort-btn.active::after { opacity: 1; }
 
+    /* ── GRID ── */
     .grid-wrap {
       position: relative; z-index: 1;
-      max-width: 1400px; margin: 0 auto;
-      padding: 0 36px 80px;
+      max-width: 1500px; margin: 0 auto;
+      padding: 0 48px 80px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 240px));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
     }
 
+    /* ── CARD ── */
     .card {
-      background: linear-gradient(145deg, #14182a, #0f1220);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
+      background: var(--card-bg);
       cursor: pointer;
       position: relative;
-      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), border-color 0.2s, box-shadow 0.25s;
-      animation: cardIn 0.5s cubic-bezier(0.34,1.2,0.64,1) both;
+      transition: background 0.15s;
+      contain: layout style; /* perf: limit layout recalc scope */
     }
 
-    .card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.04) 50%, transparent 60%);
-      transform: translateX(-100%);
-      transition: transform 0.5s ease;
-      z-index: 2; pointer-events: none;
-    }
+    .card:hover { background: #10131f; }
 
-    .card:hover::before { transform: translateX(100%); }
-
-    .card:hover {
-      transform: translateY(-6px) scale(1.01);
-      border-color: rgba(79,142,247,0.5);
-      box-shadow:
-        0 20px 60px rgba(0,0,0,0.5),
-        0 0 0 1px rgba(79,142,247,0.15),
-        0 0 40px rgba(79,142,247,0.08);
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(24px) scale(0.96); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .card-rank-badge {
-      position: absolute; top: 10px; left: 10px; z-index: 3;
-      background: rgba(10,12,18,0.75);
+    .card-rank {
+      position: absolute; top: 0; left: 0; z-index: 2;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem; letter-spacing: 1px;
+      padding: 6px 10px;
+      background: rgba(8,9,13,0.7);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 6px;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem; font-weight: 500;
-      color: var(--muted); padding: 3px 8px;
-      letter-spacing: 0.5px;
+      color: var(--muted);
     }
 
-    .card-rank-badge.top3 {
-      background: rgba(79,142,247,0.2);
-      border-color: rgba(79,142,247,0.4);
-      color: var(--accent);
-    }
+    .card-rank.top3 { color: var(--accent); }
 
-    .card-thumb-wrap { position: relative; overflow: hidden; }
+    .card-thumb-wrap {
+      position: relative;
+      overflow: hidden;
+      background: var(--surface);
+    }
 
     .card-thumb {
-      width: 100%; aspect-ratio: 16/9;
+      width: 100%; aspect-ratio: 1/1;
       object-fit: cover; display: block;
-      transition: transform 0.4s ease;
+      transition: transform 0.3s ease;
+      /* Use will-change sparingly — only on hover trigger */
     }
 
-    .card:hover .card-thumb { transform: scale(1.04); }
+    .card:hover .card-thumb { transform: scale(1.05); }
 
     .card-thumb-placeholder {
-      width: 100%; aspect-ratio: 16/9;
-      background: linear-gradient(135deg, #141828, #1a2040);
+      width: 100%; aspect-ratio: 1/1;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; color: var(--muted); letter-spacing: 2px;
-      font-family: 'DM Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem; color: var(--muted); letter-spacing: 2px;
     }
 
-    .card-thumb-wrap::after {
-      content: '';
-      position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
-      background: linear-gradient(transparent, rgba(10,12,18,0.8));
-      pointer-events: none;
-    }
-
-    .card-body { padding: 18px 18px 20px; }
+    .card-body { padding: 14px 16px 16px; }
 
     .card-name {
-      font-size: 1rem; font-weight: 700; line-height: 1.4;
-      margin-bottom: 12px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem; font-weight: 700; letter-spacing: 0.5px;
+      line-height: 1.3; margin-bottom: 12px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
     .card-stats {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px;
     }
 
     .stat {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 8px; padding: 10px 12px;
-      transition: background 0.2s, border-color 0.2s;
-    }
-
-    .card:hover .stat {
-      background: rgba(79,142,247,0.05);
-      border-color: rgba(79,142,247,0.12);
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 3px; padding: 8px 10px;
     }
 
     .stat-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.58rem; color: var(--muted);
-      letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.52rem; color: var(--muted);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px;
     }
 
-    .stat-value { font-size: 0.88rem; font-weight: 700; }
-    .stat-value.green { color: var(--green); }
-    .stat-value.blue  { color: var(--accent); }
-    .stat-value.teal  { color: var(--accent2); }
-    .stat-value.white { color: var(--text); }
-
-    .skeleton {
-      background: linear-gradient(145deg, #14182a, #0f1220);
-      border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden;
+    .stat-val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.95rem; font-weight: 700; letter-spacing: 0.5px;
     }
 
-    .skeleton-thumb { width: 100%; aspect-ratio: 16/9; background: var(--surface); }
-    .skeleton-body  { padding: 14px 16px 16px; }
+    .stat-val.green  { color: var(--green); }
+    .stat-val.blue   { color: var(--blue); }
+    .stat-val.white  { color: var(--text); }
+    .stat-val.blue-text { color: var(--accent); }
 
-    .skeleton-line {
-      height: 9px; border-radius: 4px;
-      background: linear-gradient(90deg, var(--border) 25%, #2a3050 50%, var(--border) 75%);
+    /* ── SKELETON ── */
+    .skeleton { background: var(--card-bg); }
+    .skel-thumb {
+      width: 100%; aspect-ratio: 1/1;
+      background: var(--surface);
+    }
+    .skel-body { padding: 14px 16px 16px; }
+    .skel-line {
+      height: 8px; border-radius: 2px; margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--border) 25%, #1e2436 50%, var(--border) 75%);
       background-size: 200% 100%;
-      margin-bottom: 8px;
-      animation: shimmer 1.6s infinite;
+      animation: shimmer 1.4s infinite;
     }
 
     @keyframes shimmer {
@@ -367,70 +336,81 @@
       100% { background-position: -200% 0; }
     }
 
+    /* ── ERROR ── */
     .error-box {
-      grid-column: 1/-1; text-align: center; padding: 80px 32px; color: var(--muted);
+      grid-column: 1/-1; text-align: center; padding: 80px 32px;
+      color: var(--muted);
     }
-    .error-box h2 { font-size: 1.3rem; margin-bottom: 10px; color: var(--text); }
-    .error-box p  { font-size: 0.9rem; line-height: 1.7; }
+    .error-box h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--text); margin-bottom: 8px; letter-spacing: 2px; }
     .error-box pre {
-      margin-top: 12px; font-family: 'DM Mono', monospace; font-size: 0.75rem;
+      margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
       background: var(--surface); border: 1px solid var(--border);
-      padding: 12px; border-radius: 8px; text-align: left;
-      max-width: 600px; margin: 12px auto 0; overflow-x: auto;
-      white-space: pre-wrap; word-break: break-all;
+      padding: 12px; border-radius: 4px; text-align: left;
+      max-width: 500px; margin: 12px auto 0; overflow-x: auto; white-space: pre-wrap;
     }
 
+    /* ── FOOTER ── */
     footer {
       position: relative; z-index: 1;
       border-top: 1px solid var(--border);
-      padding: 22px 36px; text-align: center;
-      color: var(--muted); font-size: 0.72rem;
+      padding: 20px 48px; text-align: center;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 1px;
     }
 
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* ── RESPONSIVE ── */
     @media (max-width: 640px) {
       header, .hero, .stats-bar, .controls, .grid-wrap { padding-left: 16px; padding-right: 16px; }
-      .grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 3.5rem; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-pill:first-child { border-radius: 6px 6px 0 0; }
+      .stat-pill:last-child  { border-radius: 0 0 6px 6px; }
     }
   </style>
 </head>
 <body>
 
-<canvas id="particles"></canvas>
+<div class="hero-glow"></div>
 
 <header>
-  <div class="logo">
-    <div class="logo-icon">RC</div>
-    RobloxCharts
-  </div>
+  <div class="logo">Roblox<span>Charts</span></div>
   <div class="header-right">
-    <div class="live-badge"><div class="live-dot"></div> Live</div>
+    <div class="live-badge"><div class="live-dot"></div>Live</div>
     <button class="refresh-btn" id="refreshBtn">↻ Refresh</button>
   </div>
 </header>
 
 <section class="hero">
   <div class="hero-eyebrow">Real-time leaderboard</div>
-  <h1>Top Roblox<br><span class="grad">Games Right Now</span></h1>
-  <p>Live player counts, total visits, and favorites — pulled straight from the Roblox API and updated every minute.</p>
+  <h1>
+    Top Roblox<br>
+    Games <span class="blue-text">Right</span><br>
+    <span class="blue-text">Now</span>
+  </h1>
+  <p class="hero-sub">Live player counts, total visits, and favorites — updated every minute.</p>
 </section>
 
 <div class="stats-bar" id="statsBar">
   <div class="stat-pill">
-    <span class="stat-pill-icon">●</span>
     <div>
       <div class="stat-pill-label">Total Playing</div>
       <div class="stat-pill-val" id="totalPlaying">—</div>
     </div>
   </div>
   <div class="stat-pill">
-    <span class="stat-pill-icon">◈</span>
     <div>
       <div class="stat-pill-label">Games Tracked</div>
       <div class="stat-pill-val" id="gamesTracked">—</div>
     </div>
   </div>
   <div class="stat-pill">
-    <span class="stat-pill-icon">◷</span>
     <div>
       <div class="stat-pill-label">Last Updated</div>
       <div class="stat-pill-val" id="lastUpdated">—</div>
@@ -449,46 +429,16 @@
   <div class="grid" id="gameGrid"></div>
 </div>
 
-<footer>RobloxCharts — not affiliated with Roblox Corporation · Data from the Roblox public API</footer>
+<footer>RobloxCharts — not affiliated with Roblox Corporation · Data via Rolimons &amp; Roblox public API</footer>
 
 <script>
-  // ── PARTICLES ──────────────────────────────────────────
-  // ── PARTICLES ──────────────────────────────────────────
-  (function() {
-    const canvas = document.getElementById('particles');
-    const ctx = canvas.getContext('2d');
-    let W, H, dots = [];
-    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-    function init() {
-      dots = Array.from({length: 60}, () => ({
-        x: Math.random() * W, y: Math.random() * H,
-        r: Math.random() * 1.5 + 0.3,
-        vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
-        alpha: Math.random() * 0.4 + 0.1,
-      }));
-    }
-    function draw() {
-      ctx.clearRect(0, 0, W, H);
-      dots.forEach(d => {
-        d.x += d.vx; d.y += d.vy;
-        if (d.x < 0) d.x = W; if (d.x > W) d.x = 0;
-        if (d.y < 0) d.y = H; if (d.y > H) d.y = 0;
-        ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(79,142,247,${d.alpha})`; ctx.fill();
-      });
-      requestAnimationFrame(draw);
-    }
-    window.addEventListener('resize', () => { resize(); init(); });
-    resize(); init(); draw();
-  })();
-
-  // ── CONFIG ─────────────────────────────────────────────
   const WORKER_URL = 'https://young-resonance-128e.frostyknight2354.workers.dev';
   let currentSort = 'TopCharts';
-  const SESSION_ID = crypto.randomUUID();
+  let loading = false;
 
+  // ── FORMAT ─────────────────────────────────────────────
   function fmt(n) {
-    if (n == null) return '—';
+    if (n == null || n === undefined) return '—';
     if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
     if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
     if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
@@ -496,17 +446,18 @@
   }
 
   function animateCount(el, target) {
-    const duration = 800, startTime = performance.now();
+    if (!target) { el.textContent = fmt(target); return; }
+    const duration = 700, startTime = performance.now();
     function step(now) {
       const p = Math.min((now - startTime) / duration, 1);
       const ease = 1 - Math.pow(1 - p, 3);
-      el.textContent = fmt(Math.floor(ease * target));
+      el.textContent = fmt(Math.round(ease * target));
       if (p < 1) requestAnimationFrame(step);
-      else el.textContent = fmt(target);
     }
     requestAnimationFrame(step);
   }
 
+  // ── FETCH ──────────────────────────────────────────────
   async function workerFetch(params) {
     const url = WORKER_URL + '?' + new URLSearchParams(params).toString();
     const res = await fetch(url);
@@ -514,67 +465,88 @@
     return res.json();
   }
 
+  // ── SKELETONS ──────────────────────────────────────────
   function showSkeletons() {
-    document.getElementById('gameGrid').innerHTML = Array(12).fill(`
-      <div class="skeleton">
-        <div class="skeleton-thumb"></div>
-        <div class="skeleton-body">
-          <div class="skeleton-line" style="width:30%"></div>
-          <div class="skeleton-line" style="width:72%"></div>
-          <div class="skeleton-line" style="width:50%"></div>
-        </div>
-      </div>`).join('');
-  }
-
-  function renderCards(games) {
+    // Use DocumentFragment to build DOM off-screen — one reflow instead of many
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement('div');
+      el.className = 'skeleton';
+      el.innerHTML = `
+        <div class="skel-thumb"></div>
+        <div class="skel-body">
+          <div class="skel-line" style="width:65%"></div>
+          <div class="skel-line" style="width:45%"></div>
+          <div class="skel-line" style="width:55%"></div>
+        </div>`;
+      frag.appendChild(el);
+    }
     const grid = document.getElementById('gameGrid');
     grid.innerHTML = '';
+    grid.appendChild(frag);
+  }
+
+  // ── RENDER ─────────────────────────────────────────────
+  function renderCards(games) {
+    const grid = document.getElementById('gameGrid');
 
     if (!games.length) {
-      grid.innerHTML = `<div class="error-box"><h2>No games found</h2><p>Could not load games. Try refreshing.</p></div>`;
+      grid.innerHTML = `<div class="error-box"><h2>No Games Found</h2><p>Try a different category or refresh.</p></div>`;
       return;
     }
 
     const total = games.reduce((s, g) => s + (g.playerCount || 0), 0);
     animateCount(document.getElementById('totalPlaying'), total);
-    document.getElementById('gamesTracked').textContent = games.length;
+    document.getElementById('gamesTracked').textContent = games.length.toLocaleString();
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+
+    // Build all cards in a fragment — single DOM insertion = no layout thrashing
+    const frag = document.createDocumentFragment();
 
     games.forEach((g, i) => {
       const card = document.createElement('div');
       card.className = 'card';
-      card.style.animationDelay = (i % 12) * 45 + 'ms';
 
       const isTop3 = i < 3;
-      const rankLabel = isTop3 ? ['#1','#2','#3'][i] : `# ${i+1}`;
-      const thumb = g.iconUrl;
+      const rankLabel = isTop3 ? ['#1','#2','#3'][i] : `#${i+1}`;
+
+      // Sanitize name to prevent XSS
+      const safeName = (g.name || 'Unknown').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
       card.innerHTML = `
         <div class="card-thumb-wrap">
-          ${thumb
-            ? `<img class="card-thumb" src="${thumb}" alt="${g.name}" loading="lazy" style="object-fit:cover"/>`
-            : `<div class="card-thumb-placeholder">NO IMAGE</div>`}
-          <div class="card-rank-badge ${isTop3 ? 'top3' : ''}">${rankLabel}</div>
+          ${g.iconUrl
+            ? `<img class="card-thumb" src="${g.iconUrl}" alt="${safeName}" loading="lazy" decoding="async"/>`
+            : `<div class="card-thumb-placeholder">NO IMG</div>`}
+          <div class="card-rank ${isTop3 ? 'top3' : ''}">${rankLabel}</div>
         </div>
         <div class="card-body">
-          <div class="card-name">${g.name}</div>
+          <div class="card-name">${safeName}</div>
           <div class="card-stats">
-            <div class="stat"><div class="stat-label">Playing</div><div class="stat-value green">${fmt(g.playerCount)}</div></div>
-            <div class="stat"><div class="stat-label">Visits</div><div class="stat-value blue">${fmt(g.visits ?? null)}</div></div>
-            <div class="stat"><div class="stat-label">Likes</div><div class="stat-value white">${fmt(g.upVotes ?? null)}</div></div>
-            <div class="stat"><div class="stat-label">Favorites</div><div class="stat-value teal">${fmt(g.favoritedCount ?? null)}</div></div>
+            <div class="stat"><div class="stat-label">Playing</div><div class="stat-val green">${fmt(g.playerCount)}</div></div>
+            <div class="stat"><div class="stat-label">Visits</div><div class="stat-val blue">${fmt(g.visits)}</div></div>
+            <div class="stat"><div class="stat-label">Likes</div><div class="stat-val white">${fmt(g.upVotes)}</div></div>
+            <div class="stat"><div class="stat-label">Favorites</div><div class="stat-val accent">${fmt(g.favoritedCount)}</div></div>
           </div>
         </div>`;
 
       if (g.rootPlaceId) {
         card.addEventListener('click', () => window.open(`https://www.roblox.com/games/${g.rootPlaceId}`, '_blank'));
       }
-      grid.appendChild(card);
+
+      frag.appendChild(card);
     });
+
+    grid.innerHTML = '';
+    grid.appendChild(frag);
   }
 
+  // ── LOAD ───────────────────────────────────────────────
   async function load(sortName) {
+    if (loading) return;
+    loading = true;
     showSkeletons();
+
     try {
       const data = await workerFetch({ action: 'get-sort-content', sortId: sortName });
       const games = data.games || [];
@@ -584,15 +556,19 @@
       console.error(err);
       document.getElementById('gameGrid').innerHTML = `
         <div class="error-box">
-          <h2>Couldn't load games</h2>
-          <p>Something went wrong fetching from the Roblox API.</p>
+          <h2>Couldn't Load Games</h2>
+          <p>Something went wrong fetching data.</p>
           <pre>${err.message}</pre>
         </div>`;
+    } finally {
+      loading = false;
     }
   }
 
+  // ── CONTROLS ───────────────────────────────────────────
   document.querySelectorAll('.sort-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (btn.classList.contains('active')) return;
       document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentSort = btn.dataset.sort;
@@ -600,9 +576,13 @@
     });
   });
 
-  document.getElementById('refreshBtn').addEventListener('click', () => load(currentSort));
+  document.getElementById('refreshBtn').addEventListener('click', () => {
+    if (!loading) load(currentSort);
+  });
+
+  // ── INIT ───────────────────────────────────────────────
   load(currentSort);
-  setInterval(() => load(currentSort), 60_000);
+  setInterval(() => { if (!loading) load(currentSort); }, 60_000);
 </script>
 </body>
 </html>
